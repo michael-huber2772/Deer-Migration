@@ -23,34 +23,35 @@ transformation drop transformed images to another folder (say Y). Erik – Feel 
 
 ## User Steps from beginning to end (Check off when completed)
 When we have completed an item we can check off that it is complete.   
--[x] Example item that has been checked off
+- [x] Example item that has been checked off
 
 List of items to complete:
--[ ] Load files from camera into folder &rarr; Potentially google drive folder
-    -[ ] If it is a google drive folder create a script to connect to the google drive api and transfer files to an
-    internal folder for storage.
--[ ] Maintain a text file log for each batch of images for tracking purposes
--[ ] Classify the images based on time of day
-    -[ ] If time stamp is available use data to separate the images into separate folders.
-    -[ ] If no time stamp is available create a script to classify the images based on the image properties.
--[ ] Preprocess the photos e.g. apply image transformation logic.
--[ ] Transfer prprocessed photos to a new staging folder
+- [ ] Load files from camera into folder &rarr; Potentially google drive folder  
+    - [ ] If it is a google drive folder create a script to connect to the google drive api and transfer files to an
+    internal folder for storage.  
+- [ ] Maintain a text file log for each batch of images for tracking purposes  
+- [ ] Classify the images based on time of day  
+    - [ ] If time stamp is available use data to separate the images into separate folders.  
+    - [ ] If no time stamp is available create a script to classify the images based on the image properties.  
+- [ ] Preprocess the photos e.g. apply image transformation logic.  
+- [ ] Transfer prprocessed photos to a new staging folder  
     * Question - Do we want to maintain images as they go through their different stages or do we just want to keep
-    raw images and finalized images? If we maintain photos in their staged form it will eat up available space much quicker.
--[ ] Feed the photos into the neural network to classify them into two groups. Animal or no animal.
--[ ] Use the neural network to perform object detection on the images containing animals
--[ ] Based on the data returned by the neural net create a log file to capture the data returned from the neural 
-network. 
-    * Animals Counted. Hierarchy total, location possibly by time.
-    * Total animals counted breakdown of how many of each animal total and by location or time of day.
-    * See if there is any other breakdown they would like us to provide.
--[ ] Decide on how to return the results. Discussed options:
-    * Django Website
-    * Tableau
-    * Emailed Report
--[ ] Other items to discuss
+    raw images and finalized images? If we maintain photos in their staged form it will eat up available space much 
+    quicker.  
+- [ ] Feed the photos into the neural network to classify them into two groups. Animal or no animal.  
+- [ ] Use the neural network to perform object detection on the images containing animals  
+- [ ] Based on the data returned by the neural net create a log file to capture the data returned from the neural 
+network.   
+    * Animals Counted. Hierarchy total, location possibly by time.  
+    * Total animals counted breakdown of how many of each animal total and by location or time of day.  
+    * See if there is any other breakdown they would like us to provide.  
+- [ ] Decide on how to return the results. Discussed options:  
+    * Django Website  
+    * Tableau  
+    * Emailed Report  
+- [ ] Other items to discuss  
     * If we collect the data in a database it will be easier to return reports and allow them to compare totals over
-    time and locations from different batches of photo dumps.
+    time and locations from different batches of photo dumps.  
 
 ## Project Coding Instructions
 We can discuss how we want the code to be integrated together. I have tried to set up the repository so we can build
@@ -69,5 +70,3 @@ all into the central app.py file and only include necessary functions.0
     not include segmentation, just skip this step. 
 * Morphology(smoothing edges)
 
-## TODO LIST
--[ ] First Step
