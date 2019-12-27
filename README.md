@@ -60,6 +60,15 @@ all into the central app.py file and only include necessary functions.0
 
 # Research and Articles
 ## Reference Links:
+* [CHPC Hosting Services](https://www.chpc.utah.edu/resources/hosting.php)
+* [Deep Learning Basics Video](https://www.youtube.com/watch?v=j-3vuBynnOE&vl=en) Provided by Ronak in 12/26/19 Meeting
+* [PNAS Research Article on Automatically Classifying Animals in Images](https://www.pnas.org/content/115/25/E5716) Work
+conducted on the Serengeti Project.
+* [Medium Article on PNAS Project](https://medium.com/coinmonks/automated-animal-identification-using-deep-learning-techniques-41039f2a994d)
+* [Serengeti Project](https://www.zooniverse.org/projects/zooniverse/snapshot-serengeti/classify) Camera Trap project
+with images that have been classified and an established structure.
+* [Lila BC](http://lila.science/datasets/snapshot-serengeti) More work done on the Serengeti Project
+
 ## Steps for image pre-processing
 [Image Pre-processing Article](https://towardsdatascience.com/image-pre-processing-c1aec0be3edf)  
 * Read image
