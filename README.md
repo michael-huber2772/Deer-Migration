@@ -1,4 +1,4 @@
-# DEER MIGRATION PROJCT - Test
+# DEER MIGRATION PROJECT
 
 ## Project Ideas
 1. Data Ingestion Pipeline – Script to import images from; say, Google Drive to a designated folder (say X) using some 
