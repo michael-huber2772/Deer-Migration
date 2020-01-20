@@ -1,6 +1,8 @@
 .idea/
 venv/
 data/training
+data/validation
+data/test
 data/unlabelled
 data/MuleDeetData
 .ipynb_checkpoints
