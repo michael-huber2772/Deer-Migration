@@ -2,11 +2,11 @@ import torch.nn as nn
 import torchvision.models
 from skorch import NeuralNetClassifier
 import torch
-import torch.utils.data as data
 import torchvision
-from torchvision import transforms
-from torch.utils.data import Dataset
-import numpy as np
+from torchvision import transforms, datasets
+from skorch.helper import predefined_split
+import os.path
+from skorch.callbacks import LRScheduler, Checkpoint, Freezer
 
 
 class NewResNet(nn.Module):
@@ -14,7 +14,7 @@ class NewResNet(nn.Module):
     def __init__(self, out_size=2, freeze=False, pretrained=True, arch='resnet50'):
         """
         This method initializes a resnet model but appends a layer to the beginning of the model.
-        :param out_size: Number of errors to train
+        :param out_size: Number of errorstrain_x, train_y to train
         :param freeze: Boolean indicating to freeze pretrained layers
         :param pretrained: Boolean indicating the use of pretrained network
         :param arch: The model architecture to use
@@ -23,39 +23,38 @@ class NewResNet(nn.Module):
         super().__init__()
 
         if arch == 'resnet50':
-            net = torchvision.models.resnet50(pretrained=pretrained)
+            model = torchvision.models.resnet50(pretrained=pretrained)
             self.model_name = 'resnet50'
         elif arch == 'resnet18':
-            net = torchvision.models.resnet18(pretrained=pretrained)
+            model = torchvision.models.resnet18(pretrained=pretrained)
             self.model_name = 'resnet18'
         elif arch == 'resnet34':
-            net = torchvision.models.resnet34(pretrained=pretrained)
+            model = torchvision.models.resnet34(pretrained=pretrained)
             self.model_name = 'resnet34'
         elif arch == 'resnet101':
-            net = torchvision.models.resnet101(pretrained=pretrained)
+            model = torchvision.models.resnet101(pretrained=pretrained)
             self.model_name = 'resnet101'
         elif arch == 'resnet152':
-            net = torchvision.models.resnet152(pretrained=pretrained)
+            model = torchvision.models.resnet152(pretrained=pretrained)
             self.model_name = 'resnet152'
         elif arch == 'wide_resnet50_2':
-            net = torchvision.models.wide_resnet50_2(pretrained=pretrained)
+            model = torchvision.models.wide_resnet50_2(pretrained=pretrained)
             self.model_name = 'wide_resnet50_2'
         elif arch == 'wide_resnet101_2':
-            net = torchvision.models.wide_resnet101_2(pretrained=pretrained)
+            model = torchvision.models.wide_resnet101_2(pretrained=pretrained)
             self.model_name = 'wide_resnet101_2'
         else:
-            net = torchvision.models.resnet18(pretrained=pretrained)
+            model = torchvision.models.resnet18(pretrained=pretrained)
             self.model_name = 'resnet18'
 
         if pretrained and freeze:
-            for param in net.parameters():
+            for param in model.parameters():
                 param.requires_grad = False
 
-        num_ftrs = net.fc.in_features
-        net.fc = nn.Linear(num_ftrs, out_size)
+        num_ftrs = model.fc.in_features
+        model.fc = nn.Linear(num_ftrs, out_size)
 
-        self.fcOut = net.fc
-        self.pretrained_net = net
+        self.model = model
 
 
     def forward(self, x):
@@ -67,71 +66,60 @@ class NewResNet(nn.Module):
         :return: The result of passing the observation through the network.
         """
 
-        out = self.pretrained_net(x)
+        out = self.model(x)
 
         return out
 
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+print(device)
+
+data_dir = 'data'
+
+normalize = transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+
+train_transforms = transforms.Compose([
+    transforms.RandomResizedCrop(224),
+    transforms.ToTensor(),
+    normalize
+])
+
+val_transforms = transforms.Compose([
+    transforms.Resize(256),
+    transforms.CenterCrop(224),
+    transforms.ToTensor(),
+    normalize
+])
+
+train_ds = datasets.ImageFolder(
+    os.path.join(data_dir, 'training'),
+    train_transforms
+)
+
+valid_ds = datasets.ImageFolder(
+    os.path.join(data_dir, 'validation'),
+    val_transforms
+)
+
+checkpoint = Checkpoint(f_params='best_model.pt', monitor='valid_acc_best')
+freezer = Freezer(lambda x: not x.startswith('model.fc'))
+
 
 CNN = NeuralNetClassifier(
     NewResNet,
-    max_epochs=10,
+    max_epochs=5,
     lr=0.0001,
+    criterion=nn.CrossEntropyLoss,
     device=device,
-    optimizer=torch.optim.Adam
+    optimizer=torch.optim.Adam,
+    train_split=predefined_split(valid_ds),
+    batch_size=16,
+    callbacks=[checkpoint, freezer],
+    iterator_train__shuffle=True,
+    iterator_valid__shuffle=True
 )
 
-train_path = 'data/training'
-train_data = torchvision.datasets.ImageFolder(
-    root=train_path,
-    transform = torchvision.transforms.ToTensor()
-)
-
-train_loader = torch.utils.data.DataLoader(
-    train_data,
-    batch_size=32,
-    shuffle=True
-)
-
-valid_path = 'data/validation'
-valid_data = torchvision.datasets.ImageFolder(
-    root=valid_path,
-    transform=torchvision.transforms.ToTensor()
-)
-
-valid_loader = torch.utils.data.DataLoader(
-    train_data,
-    batch_size=32,
-    shuffle=True
-)
-
-# transform = transforms.Compose([
-#
-#     transforms.Resize(256),
-#
-#     transforms.RandomCrop(224),
-#
-#     transforms.RandomHorizontalFlip(),
-#
-#     transforms.ToTensor(),
-#
-#     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-#
-# # MNIST dataset (images and labels)
-#
-# train_dataset = torchvision.datasets(root='data/training',
-#
-#                                            train=True,
-#
-#                                            transform=transform,
-#
-#                                            download=True)
-#
-# test_dataset = torchvision.datasets.MNIST(root='data/test',
-#
-#                                           train=False,
-#
-#                                           transform=transform,
-#
-#                                           download=True)
+# y=None because y is in train_ds and because it is an image folder, skorch
+# knows what to do. Here's a good tutorial:
+# https://github.com/skorch-dev/skorch/blob/master/notebooks/Transfer_Learning.ipynb
+CNN.fit(train_ds, y=None)
