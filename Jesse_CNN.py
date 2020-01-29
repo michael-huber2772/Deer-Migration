@@ -101,25 +101,35 @@ valid_ds = datasets.ImageFolder(
     val_transforms
 )
 
-checkpoint = Checkpoint(f_params='best_model.pt', monitor='valid_acc_best')
-freezer = Freezer(lambda x: not x.startswith('model.fc'))
 
+model_num = 0
+for rate in [0.01, 0.001, 0.0001]:
+    for arch in ['resnet18', 'resnet34']:
 
-CNN = NeuralNetClassifier(
-    NewResNet,
-    max_epochs=5,
-    lr=0.0001,
-    criterion=nn.CrossEntropyLoss,
-    device=device,
-    optimizer=torch.optim.Adam,
-    train_split=predefined_split(valid_ds),
-    batch_size=16,
-    callbacks=[checkpoint, freezer],
-    iterator_train__shuffle=True,
-    iterator_valid__shuffle=True
-)
+        model_num += 1
+
+        checkpoint = Checkpoint(f_params=f'best_model_{model_num}.pt',
+                                monitor='valid_acc_best')
+        freezer = Freezer(lambda x: not x.startswith('model.fc'))
+
+        CNN = NeuralNetClassifier(
+            NewResNet,
+            max_epochs=15,
+            lr=rate,
+            criterion=nn.CrossEntropyLoss,
+            device=device,
+            optimizer=torch.optim.Adam,
+            train_split=predefined_split(valid_ds),
+            batch_size=128,
+            callbacks=[checkpoint, freezer],
+            iterator_train__shuffle=True,
+            iterator_valid__shuffle=True,
+            module__arch=arch
+        )
+
+        CNN.fit(train_ds, y=None)
+
 
 # y=None because y is in train_ds and because it is an image folder, skorch
 # knows what to do. Here's a good tutorial:
 # https://github.com/skorch-dev/skorch/blob/master/notebooks/Transfer_Learning.ipynb
-CNN.fit(train_ds, y=None)
