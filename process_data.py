@@ -105,7 +105,7 @@ def process_data(train_pct=70, valid_pct=15, test_pct=15):
 
     # Loop through the files and determine if they are folders containing images or data files
     for file in os.listdir('data/MuleDeetData/'):
-        if '.xlsx' in file:  # If .xlsx is in file name, the file contains data
+        if '.xlsx' in file or '.csv' in file:  # If .xlsx is in file name, the file contains data
             label_files.append(file)
         else:  # If not, then it will be a directory with images
             image_dirs.append(file)
@@ -113,8 +113,12 @@ def process_data(train_pct=70, valid_pct=15, test_pct=15):
     # Create a dataframe of all labelled data
     all_data = pd.DataFrame()
     for file in label_files:  # loop through all .xlsx files
-        df = pd.read_excel(os.path.join('data/MuleDeetData/', file))  # read in next file
-        all_data = all_data.append(df, ignore_index=True)  # append to dataframe
+        if '.xlsx' in file:
+            df = pd.read_excel(os.path.join('data/MuleDeetData/', file))  # read in next file
+            all_data = all_data.append(df, ignore_index=True)  # append to dataframe
+        elif '.csv' in file:
+            df = pd.read_csv(os.path.join('data/MuleDeetData/', file))
+            all_data = all_data.append(df, ignore_index=True)
 
     people = ['Start', 'Setup/Pickup', 'End']  # List of labels that identify people
     for i in range(len(all_data)):  # Loop through all images in datafile
@@ -126,7 +130,9 @@ def process_data(train_pct=70, valid_pct=15, test_pct=15):
         image = os.path.join('data/MuleDeetData', folder, all_data['Raw Name'][i])
 
         # Check if the image has been labelled and how it has been labelled
-        if all_data['Number of Animals'][i] >= 1 or (all_data['Photo Type'][i] in people):
+        if all_data['Number of Animals'][i] >= 1 or \
+                (all_data['Photo Type'][i] in people) or \
+                (all_data['Photo Type'][i] == 'animal'):
             try:  # checking if the file exists
                 shutil.copy(image, 'data/training/animal')  # if it exists, copy to training/animal folder
             except FileNotFoundError:
