@@ -6,7 +6,7 @@ import torchvision
 from torchvision import transforms, datasets
 from skorch.helper import predefined_split
 import os.path
-from skorch.callbacks import LRScheduler, Checkpoint, Freezer
+from skorch.callbacks import LRScheduler, Checkpoint, Freezer, Callback
 
 
 class NewResNet(nn.Module):
@@ -71,6 +71,13 @@ class NewResNet(nn.Module):
         return out
 
 
+class ClearCache(Callback):
+    def on_batch_end(self, net,
+                     X=None, y=None, training=None, **kwargs):
+        torch.cuda.empty_cache()
+
+
+clear_cache = ClearCache()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
 
@@ -114,16 +121,18 @@ for rate in [0.01, 0.001, 0.0001]:
 
         CNN = NeuralNetClassifier(
             NewResNet,
-            max_epochs=15,
+            max_epochs=25,
             lr=rate,
             criterion=nn.CrossEntropyLoss,
             device=device,
             optimizer=torch.optim.Adam,
             train_split=predefined_split(valid_ds),
-            batch_size=128,
-            callbacks=[checkpoint, freezer],
+            batch_size=64,
+            callbacks=[checkpoint, freezer, clear_cache],
             iterator_train__shuffle=True,
             iterator_valid__shuffle=True,
+            iterator_train__num_workers=10,
+            iterator_valid__num_workers=10,
             module__arch=arch
         )
 
