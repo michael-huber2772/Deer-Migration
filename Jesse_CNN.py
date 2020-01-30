@@ -72,8 +72,12 @@ class NewResNet(nn.Module):
 
 
 class ClearCache(Callback):
-    def on_batch_end(self, net,
-                     X=None, y=None, training=None, **kwargs):
+    # def on_batch_end(self, net,
+    #                  X=None, y=None, training=None, **kwargs):
+    #     torch.cuda.empty_cache()
+
+    def on_epoch_end(self, net,
+                     dataset_train=None, dataset_valid=None, **kwargs):
         torch.cuda.empty_cache()
 
 
@@ -131,8 +135,8 @@ for rate in [0.01, 0.001, 0.0001]:
             callbacks=[checkpoint, freezer, clear_cache],
             iterator_train__shuffle=True,
             iterator_valid__shuffle=True,
-            iterator_train__num_workers=10,
-            iterator_valid__num_workers=10,
+            iterator_train__num_workers=4,
+            iterator_valid__num_workers=4,
             module__arch=arch
         )
 
