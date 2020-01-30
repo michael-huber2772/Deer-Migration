@@ -80,6 +80,10 @@ class ClearCache(Callback):
                      dataset_train=None, dataset_valid=None, **kwargs):
         torch.cuda.empty_cache()
 
+    def on_train_begin(self, net,
+                       X=None, y=None, **kwargs):
+        print(f'\nModel {model_num}')
+
 
 clear_cache = ClearCache()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -114,8 +118,8 @@ valid_ds = datasets.ImageFolder(
 
 
 model_num = 0
-for rate in [0.01, 0.001, 0.0001]:
-    for arch in ['resnet18', 'resnet34']:
+for rate in [0.0005, 0.0001, 0.00005, 0.000001]:
+    for arch in ['resnet18']:
 
         model_num += 1
 
@@ -125,7 +129,7 @@ for rate in [0.01, 0.001, 0.0001]:
 
         CNN = NeuralNetClassifier(
             NewResNet,
-            max_epochs=25,
+            max_epochs=200,
             lr=rate,
             criterion=nn.CrossEntropyLoss,
             device=device,
@@ -137,7 +141,8 @@ for rate in [0.01, 0.001, 0.0001]:
             iterator_valid__shuffle=True,
             iterator_train__num_workers=4,
             iterator_valid__num_workers=4,
-            module__arch=arch
+            module__arch=arch,
+            callbacks__model_num=model_num
         )
 
         CNN.fit(train_ds, y=None)
