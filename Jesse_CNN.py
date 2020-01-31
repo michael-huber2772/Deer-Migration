@@ -11,7 +11,7 @@ from skorch.callbacks import LRScheduler, Checkpoint, Freezer, Callback
 
 class NewResNet(nn.Module):
 
-    def __init__(self, out_size=2, freeze=True, pretrained=True, arch='resnet50'):
+    def __init__(self, out_size=2, freeze=False, pretrained=True, arch='resnet50'):
         """
         This method initializes a resnet model but appends a layer to the beginning of the model.
         :param out_size: Number of errorstrain_x, train_y to train
@@ -135,7 +135,7 @@ for rate in [0.001, 0.0005, 0.0001]:
             optimizer=torch.optim.Adam,
             train_split=predefined_split(valid_ds),
             batch_size=64,
-            callbacks=[checkpoint, freezer, clear_cache],
+            callbacks=[checkpoint, clear_cache],
             iterator_train__shuffle=True,
             iterator_valid__shuffle=True,
             iterator_train__num_workers=4,
