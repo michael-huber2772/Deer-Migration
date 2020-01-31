@@ -11,7 +11,7 @@ from skorch.callbacks import LRScheduler, Checkpoint, Freezer, Callback
 
 class NewResNet(nn.Module):
 
-    def __init__(self, out_size=2, freeze=False, pretrained=True, arch='resnet50'):
+    def __init__(self, out_size=2, freeze=True, pretrained=True, arch='resnet50'):
         """
         This method initializes a resnet model but appends a layer to the beginning of the model.
         :param out_size: Number of errorstrain_x, train_y to train
@@ -72,12 +72,8 @@ class NewResNet(nn.Module):
 
 
 class ClearCache(Callback):
-    # def on_batch_end(self, net,
-    #                  X=None, y=None, training=None, **kwargs):
-    #     torch.cuda.empty_cache()
-
-    def on_epoch_end(self, net,
-                     dataset_train=None, dataset_valid=None, **kwargs):
+    def on_batch_end(self, net,
+                     X=None, y=None, training=None, **kwargs):
         torch.cuda.empty_cache()
 
     def on_train_begin(self, net,
@@ -95,6 +91,9 @@ normalize = transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 
 train_transforms = transforms.Compose([
     transforms.RandomResizedCrop(224),
+    transforms.RandomGrayscale(p=0.3),
+    transforms.RandomRotation((-11, 11)),
+    transforms.RandomHorizontalFlip(p=0.25),
     transforms.ToTensor(),
     normalize
 ])
@@ -118,8 +117,8 @@ valid_ds = datasets.ImageFolder(
 
 
 model_num = 0
-for rate in [0.0005, 0.0001, 0.00005, 0.000001]:
-    for arch in ['resnet18']:
+for rate in [0.001, 0.0005, 0.0001]:
+    for arch in ['resnet18', 'wide_resnet50_2']:
 
         model_num += 1
 
@@ -129,7 +128,7 @@ for rate in [0.0005, 0.0001, 0.00005, 0.000001]:
 
         CNN = NeuralNetClassifier(
             NewResNet,
-            max_epochs=200,
+            max_epochs=120,
             lr=rate,
             criterion=nn.CrossEntropyLoss,
             device=device,
