@@ -82,6 +82,11 @@ class ClearCache(Callback):
 
 
 clear_cache = ClearCache()
+lrscheduler = LRScheduler(
+    policy='StepLR',
+    step_size=25,
+    gamma=0.25
+)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
 
@@ -117,8 +122,8 @@ valid_ds = datasets.ImageFolder(
 
 
 model_num = 0
-for rate in [0.001, 0.0005, 0.0001]:
-    for arch in ['resnet18', 'wide_resnet50_2']:
+for rate in [0.0001]:
+    for arch in ['wide_resnet50_2']:
 
         model_num += 1
 
@@ -128,14 +133,14 @@ for rate in [0.001, 0.0005, 0.0001]:
 
         CNN = NeuralNetClassifier(
             NewResNet,
-            max_epochs=120,
+            max_epochs=115,
             lr=rate,
             criterion=nn.CrossEntropyLoss,
             device=device,
             optimizer=torch.optim.Adam,
             train_split=predefined_split(valid_ds),
             batch_size=64,
-            callbacks=[checkpoint, clear_cache],
+            callbacks=[checkpoint, clear_cache, lrscheduler],
             iterator_train__shuffle=True,
             iterator_valid__shuffle=True,
             iterator_train__num_workers=4,
