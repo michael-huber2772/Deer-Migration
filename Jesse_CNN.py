@@ -96,9 +96,9 @@ normalize = transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 
 train_transforms = transforms.Compose([
     transforms.RandomResizedCrop(224),
-    transforms.RandomGrayscale(p=0.3),
+    transforms.RandomGrayscale(p=0.35),
     transforms.RandomRotation((-11, 11)),
-    transforms.RandomHorizontalFlip(p=0.25),
+    transforms.RandomHorizontalFlip(p=0.3),
     transforms.ToTensor(),
     normalize
 ])
